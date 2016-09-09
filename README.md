@@ -68,7 +68,7 @@ data() {
     }
   }
 },
-watch:{
+watch: {
   'calendar.value': function (value) {
     this.calendar.items[this.calendar.picker].value = value
   }

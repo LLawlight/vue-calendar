@@ -20,13 +20,13 @@
       </thead>
       <tbody>
         <tr>
-          <td v-for="td in firstTr" :class="{'disabled': ((td > 21) || ((isDisabledStart ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td))) || (isDisabledEnd ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td))))), 'active': ((this.year == this.value.split('.')[0]) && (this.month == this.value.split('.')[1]) && (td == this.value.split('.')[2]) && !((td > 21) || ((isDisabledStart ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td))) || (isDisabledEnd ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td)))))), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
+          <td v-for="td in firstTr" :class="{'disabled': ((td > 21) || (isDisabledStart(td) || isDisabledEnd(td))), 'active': (isActive(td) && !((td > 21) || (isDisabledStart(td) || isDisabledEnd(td)))), 'nowDate': isNowDate(td)}" @click="getDate">{{td}}</td>
         </tr>
         <tr v-for="tr in trs">
-          <td v-for="td in tr" :class="{'disabled': ((isDisabledStart ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td))) || (isDisabledEnd ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td)))), 'active': ((this.year == this.value.split('.')[0]) && (this.month == this.value.split('.')[1]) && (td == this.value.split('.')[2]) && !((isDisabledStart ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td))) || (isDisabledEnd ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td))))), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
+          <td v-for="td in tr" :class="{'disabled': (isDisabledStart(td) || isDisabledEnd(td)), 'active': (isActive(td) && !(isDisabledStart(td) || isDisabledEnd(td))), 'nowDate': isNowDate(td)}" @click="getDate">{{td}}</td>
         </tr>
         <tr>
-          <td v-for="td in lastTr" :class="{'disabled': ((td < 8) || ((isDisabledStart ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td))) || (isDisabledEnd ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td))))), 'active': ((this.year == this.value.split('.')[0]) && (this.month == this.value.split('.')[1]) && (td == this.value.split('.')[2]) && !((td < 8) || ((isDisabledStart ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td))) || (isDisabledEnd ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td)))))), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
+          <td v-for="td in lastTr" :class="{'disabled': ((td < 8) || (isDisabledStart(td) || isDisabledEnd(td))), 'active': (isActive(td) && !(isDisabledStart(td) || isDisabledEnd(td))), 'nowDate': isNowDate(td)}" @click="getDate">{{td}}</td>
         </tr>
       </tbody>
     </table>
@@ -42,8 +42,6 @@ export default {
       nowYear: 0,
       nowMonth: 0,
       nowDate: 0,
-      year: 0,
-      month: 0,
       choosedStartYear: 0,
       choosedStartMonth: 0,
       choosedStartDate: 0,
@@ -65,6 +63,14 @@ export default {
     endYear: {
       type: Number,
       default: 2099
+    },
+    year: {
+      type: Number,
+      default: 1993
+    },
+    month: {
+      type: Number,
+      default: 6
     },
     show: {
       type: Boolean,
@@ -115,23 +121,6 @@ export default {
     // 当前月的上个月的最后一天是几号
     lastEndDate: function() {
       return new Date(this.year, this.month - 1, 0).getDate()
-    },
-    isDisabledStart: function() {
-      this.choosedStartYear = this.choosedStart.split('.')[0]
-      this.choosedStartMonth = this.choosedStart.split('.')[1]
-      this.choosedStartDate = this.choosedStart.split('.')[2]
-      return (this.choosedStartYear > this.year) || ((this.choosedStartYear == this.year) && (this.choosedStartMonth > this.month))
-    },
-    isDisabledEnd: function() {
-      this.choosedEndYear = this.choosedEnd.split('.')[0]
-      this.choosedEndMonth = this.choosedEnd.split('.')[1]
-      this.choosedEndDate = this.choosedEnd.split('.')[2]
-      if (this.choosedEndYear!=="") {
-        return (this.choosedEndYear < this.year) || ((this.choosedEndYear == this.year) && (this.choosedEndMonth < this.month))
-      }
-      else {
-        return false
-      }
     }
   },
   ready() {
@@ -222,6 +211,29 @@ export default {
         thisDate = (thisDate < 10)?('0' + thisDate):thisDate
         this.value = this.year + '.' + thisMonth + '.' + thisDate
         this.close()
+      }
+    },
+    isNowDate: function(td) {
+      return ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))
+    },
+    isActive: function(td) {
+      return (this.year == this.value.split('.')[0]) && (this.month == this.value.split('.')[1]) && (td == this.value.split('.')[2])
+    },
+    isDisabledStart: function(td) {
+      this.choosedStartYear = this.choosedStart.split('.')[0]
+      this.choosedStartMonth = Number(this.choosedStart.split('.')[1])
+      this.choosedStartDate = this.choosedStart.split('.')[2]
+      return ((this.choosedStartYear > this.year) || ((this.choosedStartYear == this.year) && (this.choosedStartMonth > this.month)) ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td)))
+    },
+    isDisabledEnd: function(td) {
+      this.choosedEndYear = this.choosedEnd.split('.')[0]
+      this.choosedEndMonth = Number(this.choosedEnd.split('.')[1])
+      this.choosedEndDate = this.choosedEnd.split('.')[2]
+      if (this.choosedEndYear!=="") {
+        return ((this.choosedEndYear < this.year) || ((this.choosedEndYear == this.year) && (this.choosedEndMonth < this.month)) ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td)))
+      }
+      else {
+        return false
       }
     }
   },
