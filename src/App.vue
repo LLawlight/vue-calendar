@@ -1,19 +1,37 @@
 <template>
   <div id="app">
     <img class="logo" src="./assets/logo.png">
-    <hello></hello>
     <div class="inputDate">
+      <h2>单选模式第一组</h2>
       <input type="text" readonly @click="showCalendar($event,'picker1')" v-model="calendar.items.picker1.value" />
     </div>
     <div class="inputDate">
+      <h2>单选模式第二组</h2>
+      <input type="text" readonly @click="showCalendar($event,'picker6')" v-model="calendar.items.picker6.value" />
+    </div>
+    <div class="inputDate">
+      <h2>区间模式第一组</h2>
+      起始时间：
       <input type="text" readonly @click="showCalendar($event,'picker2')" v-model="calendar.items.picker2.value" />
+      结束时间：
       <input type="text" readonly @click="showCalendar($event,'picker3')" v-model="calendar.items.picker3.value" />
     </div>
+    <div class="inputDate">
+      <h2>区间模式第二组</h2>
+      起始时间：
+      <input type="text" readonly @click="showCalendar($event,'picker4')" v-model="calendar.items.picker4.value" />
+      结束时间：
+      <input type="text" readonly @click="showCalendar($event,'picker5')" v-model="calendar.items.picker5.value" />
+    </div>
     <calendar
+    :start-year="1926"
+    :end-year="2048"
     :show.sync="calendar.show"
     :x="calendar.x"
     :y="calendar.y"
-    :value.sync="calendar.value"></calendar>
+    :choosed-start="calendar.choosedStart.value"
+    :value.sync="calendar.value"
+    @click="getChoosedStart"></calendar>
     <p>
       Welcome to your Vue.js app!
     </p>
@@ -35,12 +53,10 @@
 </template>
 
 <script>
-import Hello from './components/Hello'
 import Calendar from './components/Calendar'
 
 export default {
   components: {
-    Hello,
     Calendar
   },
   data() {
@@ -49,17 +65,54 @@ export default {
         show: false,
         x: 0,
         y: 0,
-        value: '',
-        picker: '',
+        value: "",
+        picker: "",
+        choosedStart: {
+          value: "",
+          1: {
+            value: ""
+          },
+          2: {
+            value: ""
+          }
+        },
+        choosedEnd: {
+          value: "",
+          1: {
+            value: ""
+          },
+          2: {
+            value: ""
+          }
+        },
         items: {
           // 单选
           picker1: {
             value: ""
           },
+          // 区间
           picker2: {
-            value: ""
+            value: "",
+            group: 1,
+            type: "chooseStart"
           },
           picker3: {
+            value: "",
+            group: 1,
+            type: "chooseEnd"
+          },
+          picker4: {
+            value: "",
+            group: 2,
+            type: "chooseStart"
+          },
+          picker5: {
+            value: "",
+            group: 2,
+            type: "chooseEnd"
+          },
+          // 单选
+          picker6: {
             value: ""
           }
         }
@@ -78,7 +131,23 @@ export default {
       this.calendar.y = event.target.offsetTop + event.target.offsetHeight + 7
 
       this.calendar.picker = pickerName
-      this.calendar.value = this.calendar.items[pickerName].value
+      this.calendar.choosedStart.value = ""
+      // this.calendar.value = this.calendar.items[pickerName].value
+      if (this.calendar.items[pickerName].type === "chooseEnd") {
+        this.calendar.choosedStart.value = this.calendar.choosedStart[this.calendar.items[pickerName].group].value
+      }
+      else if (this.calendar.items[pickerName].type === "chooseStart") {
+        this.calendar.choosedEnd.value = this.calendar.choosedEnd[this.calendar.items[pickerName].group].value
+      }
+    },
+    getChoosedStart: function() {
+      if (this.calendar.items[this.calendar.picker].type === "chooseStart") {
+        this.calendar.choosedStart[this.calendar.items[this.calendar.picker].group].value = this.calendar.value
+      }
+      else if (this.calendar.items[this.calendar.picker].type === "chooseEnd") {
+        this.calendar.items[this.calendar.picker].value = this.calendar.value
+        this.calendar.choosedEnd[this.calendar.items[this.calendar.picker].group].value = this.calendar.value
+      }
     }
   }
 }
@@ -92,6 +161,10 @@ html {
 body {
   margin: 0;
   height: 100%;
+}
+
+h2 {
+  color: #42b983;
 }
 
 #app {

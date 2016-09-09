@@ -3,7 +3,7 @@
     <div>
       <button type="button" name="preMonth" class="btn" @click="preMonth">&lt;</button>
       <select v-model="year">
-        <option v-for="n in showYears">{{n+startYear}}</option>
+        <option v-for="year in showYears">{{year+startYear}}</option>
       </select>
       年
       <select v-model="month">
@@ -20,13 +20,14 @@
       </thead>
       <tbody>
         <tr>
-          <td v-for="td in firstTr" :class="{'disabled': (td > 21), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
+          <td v-for="td in firstTr" :class="{'disabled': ((td > 21) || isDisabled || ((this.choosedStart.split('.')[0] == this.year) && (this.choosedStart.split('.')[1] == this.month) && (this.choosedStart.split('.')[2] > td))), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
         </tr>
         <tr v-for="tr in trs">
-          <td v-for="td in tr" :class="{'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
+          <td v-for="td in tr"
+          :class="{'disabled': (isDisabledStart ||((this.choosedStartYear == this.year) && (this.choosedStartMonth == this.month) && (this.choosedStartDate > td))) || (isDisabledEnd ||((this.choosedEndYear == this.year) && (this.choosedEndMonth == this.month) && (this.choosedEndDate < td))), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
         </tr>
         <tr>
-          <td v-for="td in lastTr" :class="{'disabled': (td < 8), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
+          <td v-for="td in lastTr" :class="{'disabled': ((td < 8) || isDisabled || ((this.choosedStart.split('.')[0] == this.year) && (this.choosedStart.split('.')[1] == this.month) && (this.choosedStart.split('.')[2] > td))), 'nowDate': ((this.year == this.nowYear) && (this.month == this.nowMonth) && (td == this.nowDate))}" @click="getDate">{{td}}</td>
         </tr>
       </tbody>
     </table>
@@ -44,14 +45,28 @@ export default {
       nowDate: 0,
       year: 0,
       month: 0,
-      startYear: 1900,
-      endYear: 2099,
+      choosedStartYear: 0,
+      choosedStartMonth: 0,
+      choosedStartDate: 0,
+      choosedEndYear: 0,
+      choosedEndMonth: 0,
+      choosedEndDate: 0,
       firstTr: [],
       trs: [],
-      lastTr: []
+      lastTr: [],
+      months: [1,2,3,4,5,6,7,8,9,10,11,12],
+      days: ['日','一','二','三','四','五','六']
     }
   },
   props: {
+    startYear: {
+      type: Number,
+      default: 1900
+    },
+    endYear: {
+      type: Number,
+      default: 2099
+    },
     show: {
       type: Boolean,
       twoWay: true,
@@ -62,18 +77,6 @@ export default {
       twoWay: true,
       default: ""
     },
-    months: {
-      type: Array,
-      default: function() {
-        return ['1','2','3','4','5','6','7','8','9','10','11','12']
-      }
-    },
-    days: {
-      type: Array,
-      default: function() {
-        return ['日','一','二','三','四','五','六']
-      }
-    },
     x: {
       type: Number,
       default: 0
@@ -81,6 +84,14 @@ export default {
     y: {
       type: Number,
       default: 0
+    },
+    choosedStart: {
+      type: String,
+      default: ""
+    },
+    choosedEnd: {
+      type: String,
+      default: ""
     }
   },
   computed: {
@@ -105,6 +116,23 @@ export default {
     // 当前月的上个月的最后一天是几号
     lastEndDate: function() {
       return new Date(this.year, this.month - 1, 0).getDate()
+    },
+    isDisabledStart: function() {
+      this.choosedStartYear = this.choosedStart.split('.')[0]
+      this.choosedStartMonth = this.choosedStart.split('.')[1]
+      this.choosedStartDate = this.choosedStart.split('.')[2]
+      return (this.choosedStartYear > this.year) || ((this.choosedStartYear == this.year) && (this.choosedStartMonth > this.month))
+    },
+    isDisabledEnd: function() {
+      this.choosedEndYear = this.choosedEnd.split('.')[0]
+      this.choosedEndMonth = this.choosedEnd.split('.')[1]
+      this.choosedEndDate = this.choosedEnd.split('.')[2]
+      if (this.choosedEndYear!=="") {
+        return (this.choosedEndYear < this.year) || ((this.choosedEndYear == this.year) && (this.choosedEndMonth < this.month))
+      }
+      else {
+        return false
+      }
     }
   },
   ready() {
