@@ -30,6 +30,7 @@
     :x="calendar.x"
     :y="calendar.y"
     :choosed-start="calendar.choosedStart.value"
+    :choosed-end="calendar.choosedEnd.value"
     :value.sync="calendar.value"
     @click="getChoosedStart"></calendar>
     <p>
@@ -132,7 +133,8 @@ export default {
 
       this.calendar.picker = pickerName
       this.calendar.choosedStart.value = ""
-      // this.calendar.value = this.calendar.items[pickerName].value
+      this.calendar.choosedEnd.value = ""
+      this.calendar.value = this.calendar.items[pickerName].value
       if (this.calendar.items[pickerName].type === "chooseEnd") {
         this.calendar.choosedStart.value = this.calendar.choosedStart[this.calendar.items[pickerName].group].value
       }
@@ -142,6 +144,7 @@ export default {
     },
     getChoosedStart: function() {
       if (this.calendar.items[this.calendar.picker].type === "chooseStart") {
+        this.calendar.items[this.calendar.picker].value = this.calendar.value
         this.calendar.choosedStart[this.calendar.items[this.calendar.picker].group].value = this.calendar.value
       }
       else if (this.calendar.items[this.calendar.picker].type === "chooseEnd") {

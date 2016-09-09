@@ -13,10 +13,15 @@
 ```
 ```
 <calendar
+:start-year="1926"
+:end-year="2048"
 :show.sync="calendar.show"
 :x="calendar.x"
 :y="calendar.y"
-:value.sync="calendar.value"></calendar>
+:choosed-start="calendar.choosedStart.value"
+:choosed-end="calendar.choosedEnd.value"
+:value.sync="calendar.value"
+@click="getChoosedStart"></calendar>
 
 ```
 ```
@@ -29,17 +34,35 @@ data() {
       show: false,
       x: 0,
       y: 0,
-      value: '',
-      picker: '',
+      value: "",
+      picker: "",
+      choosedStart: {
+        value: "",
+        1: {
+          value: ""
+        }
+      },
+      choosedEnd: {
+        value: "",
+        1: {
+          value: ""
+        }
+      },
       items: {
+        // 单选
         picker1: {
           value: ""
         },
+        // 区间
         picker2: {
-          value: ""
+          value: "",
+          group: 1,
+          type: "chooseStart"
         },
         picker3: {
-          value: ""
+          value: "",
+          group: 1,
+          type: "chooseEnd"
         }
       }
     }
@@ -57,7 +80,25 @@ methods: {
     this.calendar.y = event.target.offsetTop + event.target.offsetHeight + 7
 
     this.calendar.picker = pickerName
+    this.calendar.choosedStart.value = ""
+    this.calendar.choosedEnd.value = ""
     this.calendar.value = this.calendar.items[pickerName].value
+    if (this.calendar.items[pickerName].type === "chooseEnd") {
+      this.calendar.choosedStart.value = this.calendar.choosedStart[this.calendar.items[pickerName].group].value
+    }
+    else if (this.calendar.items[pickerName].type === "chooseStart") {
+      this.calendar.choosedEnd.value = this.calendar.choosedEnd[this.calendar.items[pickerName].group].value
+    }
+  },
+  getChoosedStart: function() {
+    if (this.calendar.items[this.calendar.picker].type === "chooseStart") {
+      this.calendar.items[this.calendar.picker].value = this.calendar.value
+      this.calendar.choosedStart[this.calendar.items[this.calendar.picker].group].value = this.calendar.value
+    }
+    else if (this.calendar.items[this.calendar.picker].type === "chooseEnd") {
+      this.calendar.items[this.calendar.picker].value = this.calendar.value
+      this.calendar.choosedEnd[this.calendar.items[this.calendar.picker].group].value = this.calendar.value
+    }
   }
 }
 ```
